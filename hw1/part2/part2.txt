@@ -1,0 +1,25 @@
+См. флаги “-mkdir” и “-touchz“
+1. hdfs dfs -mkdir /folder
+2. hdfs dfs -mkdir /folder/folder2
+3. Trash в распределенной файловой системе - место, куда попадают файлы после удаления, чтобы их можно было восстановить. Можно удалять, минуя Trash, используя флаг -skipTrash в команде удаления, либо полностью отключив функцию Trash в настройках файловой системы.
+4. hdfs dfs -touchz /folder/folder2/empty
+5. hdfs dfs -rm /folder/folder2/empty
+6. hdfs dfs -rmdir /folder/folder2
+   hdfs dfs -rmdir /folder
+
+См. флаги “-put”, “-cat”, “-tail”, “-cp”
+1. Допустим, файл file.txt лежит в корне докер контейнера неймноды (или мы предварительно его туда скопировали через docker cp file.txt namenode:/). Команды:
+   hdfs dfs -mkdir /new
+   hdfs dfs -put file.txt /new
+2. hdfs dfs -cat /new/file.txt
+3. hdfs dfs -tail /new/file.txt
+4. hdfs dfs -head /new/file.txt
+5. В задании просили переместить, а не скопировать, поэтому используем -mv вместо -cp
+   hdfs dfs -mkdir /new
+   hdfs dfs -mv /new/file.txt /new2
+
+Флаги -setrep, fsck
+2. hdfs dfs -setrep -w 1 /new2/file.txt - уменьшение числа реплик - примерно 15 секунд
+   hdfs dfs -setrep -w 3 /new2/file.txt - увеличение числа реплик - примерно 7 секунд
+3. hdfs fsck /new2/file.txt -files -blocks -locations
+4. hdfs fsck -blockId blk_1073741831

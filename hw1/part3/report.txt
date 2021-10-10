@@ -1,0 +1,28 @@
+Подсчет статистик через numpy:
+1) python standard.py
+stdout:
+152.7206871868289
+57672.84569843359
+
+Затем я эмулировал mapreduce следующим образом:
+Mean:
+1) python mapper_mean.py < AB_NYC_2019.csv > mapper_mean_tmp.txt
+	В файле mapper_mean_tmp.txt сохраняются предварительные результаты после map шага.
+2) python reducer_mean.py < mapper_mean_tmp.txt
+	stdout: 48895	152.72068718682831
+
+Var:
+1) python mapper_var.py < AB_NYC_2019.csv > mapper_var_tmp.txt
+	В файле mapper_var_tmp.txt сохраняются предварительные результаты после map шага.
+2) python reducer_var.py < mapper_var_tmp.txt
+	stdout: 48895	152.72068718682831	57672.84569843379
+
+
+Чтобы убедиться, что все работает правильно, делил содержимое файла промежуточных данных mapper_var_tmp.txt на 2 кусочка, запускал на них reducer отдельно и запускал reducer поверх вывода тех 2 reducer'ов - результаты совпали.
+
+Сравнительная таблица:
+
+           |        Mean        |      Variance     |
+numpy      | 152.7206871868289  | 57672.84569843359 |
+mapreduce  | 152.72068718682831 | 57672.84569843379 |
+
