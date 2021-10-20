@@ -1,0 +1,64 @@
+1. Выполняем следующие шаги (загрузка через интерфейс hue фейлилась, пришлось так):
+- копируем файл из локальной машины на сервер Hive: sudo docker cp artists.csv docker-hadoop-hive-parquet_hive-server_1:/opt/
+- подключаемся к hive через beeline: /opt/hive/bin/beeline -u jdbc:hive2://localhost:10000
+- Создаем новую таблицу
+	create table artists (mbid string,
+	artist_mb string,
+	artist_lastfm string,
+	country_mb string,
+	country_lastfm string,
+	tags_mb string,
+	tags_lastfm string,
+	listeners_lastfm int,
+	scrobbles_lastfm int,
+	ambiguous_artist boolean)
+	ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+	LINES TERMINATED BY '\n'
+	STORED AS TEXTFILE
+	tblproperties ("skip.header.line.count"="1");
+- загружаем таблицу: LOAD DATA LOCAL INPATH '/opt/artists.csv' OVERWRITE INTO TABLE artists;
+
+2.
+a) Команда:
+select t.artist_mb from 
+artists t, (select max(scrobbles_lastfm) ms from artists) s
+where t.scrobbles_lastfm = s.ms
+
+Результат:
+The Beatles
+
+b)
+Команда:
+with 
+t as (select tag, count(*) cnt from 
+(select explode(split(tags_lastfm, '; ')) tag from artists) t
+group by tag
+),
+m_t as (select max(cnt) max_cnt from t)
+select t.tag
+from m_t, t
+where t.cnt = m_t.max_cnt
+
+Результат:
+seen live
+
+c)
+
+select tag, count(*) cnt from 
+(select explode(split(tags_lastfm, '; ')) tag from artists) t
+where tag <> ""
+group by tag
+order by cnt desc
+limit 10
+
+d) Самый популярный артист в США
+Команда:
+with t as 
+(select max(listeners_lastfm) m from artists
+where country_lastfm='United States')
+select artist_lastfm from artists, t
+where artists.listeners_lastfm = t.m
+and artists.country_lastfm='United States'
+
+Результат:
+Red Hot Chili Peppers
