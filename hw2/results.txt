@@ -43,13 +43,48 @@ where t.cnt = m_t.max_cnt
 seen live
 
 c)
+Команда:
+select t4.artist_lastfm
+from
+(
+    select t3.artist_lastfm, t3.listeners 
+    from
+    (
+        select t1.artist_lastfm, max(t1.listeners_lastfm) listeners
+        from
+        (
+            select artist_lastfm, listeners_lastfm, tag 
+            from artists
+            lateral view explode(split(tags_lastfm, '; ')) t as tag
+        ) t1
+        inner join
+        (
+            select tag, count(*) cnt 
+            from 
+                (select explode(split(tags_lastfm, '; ')) tag from artists) t
+            where tag <> ""
+            group by tag
+            order by cnt desc
+            limit 10
+        ) t2
+        on t1.tag = t2.tag
+        group by t1.artist_lastfm 
+    ) t3
+    order by t3.listeners desc
+    limit 10
+) t4
 
-select tag, count(*) cnt from 
-(select explode(split(tags_lastfm, '; ')) tag from artists) t
-where tag <> ""
-group by tag
-order by cnt desc
-limit 10
+Результат:
+Coldplay
+Radiohead
+Red Hot Chili Peppers
+Rihanna
+Eminem
+The Killers
+Kanye West
+Nirvana
+Muse
+Queen
 
 d) Самый популярный артист в США
 Команда:
